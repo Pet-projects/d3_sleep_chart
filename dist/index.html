@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Accelerate Report</title>
+
+    <link rel="stylesheet" type="text/css"
+          href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.0/semantic.min.css">
+    <link rel="stylesheet" type="text/css" href="assets/nouislider.min.css">
+    <link rel="stylesheet" type="text/css" href="assets/style.css">
+    <link rel="stylesheet" type="text/css" href="assets/sleep_chart.css">
+
+    <link rel="icon" type="image/png" href="assets/images/logo_favicon.png">
+</head>
+<body>
+
+<div class="ui main grid">
+
+    <div class="row">
+        <div class="column">
+            <h2 class="header">Sleep Chart</h2>
+            <div class="description">
+                <div class="ui info message">
+                    Description
+                </div>
+                <div class="ui stackable two column grid">
+                    <div class="eight wide column">
+                        <span>Time range:</span>
+                        <div id="control-time-range-filter"
+                             style="margin-top: 50px; margin-left:15px;"></div>
+                    </div>
+                    <div class="three wide column" style="margin-top: 66px;">
+                        <select class="ui fluid search selection dropdown dropdown-labeled"
+                                id="control-language-selection"></select>
+                    </div>
+                    <div class="five wide column" style="margin-top: 66px;">
+                        <div class="ui list">
+                            <div class="item">
+                                <div class="ui toggle checkbox">
+                                    <input type="checkbox" id="control-show-only-matching">
+                                    <label>Display only selected candidates</label>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="ui toggle checkbox">
+                                    <input type="checkbox" id="control-show-round-times">
+                                    <label>Display round times</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="column">
+            <div class="content" id="sleepchart">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"
+        integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.0/semantic.min.js"></script>
+<script src="./config/report.conf.js"></script>
+<script src="./lib/report.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,108 @@
+/* @font-face {
+    font-family: 'Lato';
+    src:
+        url('../assets/fonts/Lato-Regular.woff2') format('woff2'),
+        url('../assets/fonts/Lato-Regular.woff') format('woff'),
+        url('../assets/fonts/Lato-Regular.ttf') format('truetype');
+} */
+
+body {
+    background: #f6f7fb;
+}
+
+/* body, .ui {
+    font-family: 'Lato';
+} */
+
+.ui.inverted.menu {
+    background: #4c5675;
+}
+
+.ui.menu .header {
+    font-size: 1.3em;
+}
+
+.ui.menu .logo {
+    height: 32px;
+}
+
+.ui.menu a {
+    margin-right: 10px;
+    margin-top: 5px;
+}
+
+.dropdown-labeled > select + i + input + .text::after {
+    color: #82929f;
+    margin-left: 2px;
+}
+
+#control-language-selection + i + input + .text::after {
+    content: '(Language)';
+}
+
+h2 {
+    color: #52575a !important;
+}
+
+.ui.toggle.checkbox label:after {
+    border: 2px solid #2185d0 !important;
+}
+
+.ui.toggle.checkbox label:before {
+    border: 1px solid lightgrey !important;
+}
+
+.ui.button.smaller-text {
+    font-size: 0.9rem;
+}
+
+.ui.grid {
+    margin: 1em;
+}
+
+.ui.compact.table th {
+    padding: .5em .7em;
+}
+
+.ui.card {
+    height: 100%;
+    width: 100%;
+}
+
+.ui.table thead th {
+    text-align: center;
+}
+
+.ui.progress {
+    margin-bottom: 0 !important;
+}
+
+.ui.basic.blue.button:hover {
+    background-color: #2185D0 !important;
+    color: white !important;
+}
+
+h2.header {
+    color: #626667;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.noUi-value {
+    height: 30px;
+}
+
+
+svg text.label {
+    cursor: pointer;
+}
+
+svg text.label:hover {
+    font-weight: bolder;
+}
+
+#benchmark table td:nth-child(n+1){
+    text-align: right;
+}

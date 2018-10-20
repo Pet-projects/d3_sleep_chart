@@ -1,0 +1,14 @@
+# Created by .ignore support plugin (hsz.mobi)
+.idea
+out
+bower_components
+node_modules
+dist/lib/*
+.DS_Store
+tests_output
+coverage
+xyz
+src/**/*.js
+tests/candidateSummary.test.js
+tests/benchmark.test.js
+tests/observation.rules.test.js

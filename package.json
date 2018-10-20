@@ -1,0 +1,59 @@
+{
+  "name": "happy_sleeper_d3",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/julianghionoiu/tdl-reports.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/julianghionoiu/tdl-reports/issues"
+  },
+  "homepage": "https://github.com/julianghionoiu/tdl-reports#readme",
+  "devDependencies": {
+    "@types/d3": "^4.11.0",
+    "@types/jest": "^21.1.5",
+    "@types/nouislider": "^9.0.2",
+    "browserify": "^14.5.0",
+    "connect": "^3.6.5",
+    "gulp": "^3.9.1",
+    "gulp-debug": "^3.2.0",
+    "gulp-sourcemaps": "^2.6.1",
+    "gulp-typescript": "^3.2.3",
+    "jest": "^21.2.1",
+    "pixelmatch": "^4.0.2",
+    "puppeteer": "^0.13.0",
+    "serve-static": "^1.13.1",
+    "ts-jest": "^21.2.1",
+    "tsify": "^3.0.3",
+    "typescript": "^2.5.3",
+    "typescript-compiler": "^1.4.1",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0"
+  },
+  "dependencies": {
+    "d3": "^4.11.0",
+    "nouislider": "^9.0.2"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.(ts)$": "./tests/.ts_preprocessor.js"
+    },
+    "testMatch": [
+      "**/tests/**/*.test.(js|ts)?(x)"
+    ],
+    "moduleFileExtensions": [
+      "js",
+      "jsx",
+      "json",
+      "ts",
+      "tsx"
+    ]
+  }
+}
