@@ -1,4 +1,6 @@
 import * as d3 from "d3";
+import {default as DataIntervalTree, IntervalTree} from "node-interval-tree";
+
 
 export type TransitionCoordinator = d3.Transition<any, any, any, any>
 export type UpdatableSelection = d3.Transition<any, any, any, any>
@@ -42,4 +44,47 @@ export class DataRow implements d3.DSVRowAny {
     _y0: number;
 }
 
+
+export enum ActivityType {
+    SLEEP,
+    FEED,
+}
+
+export class Activity {
+    constructor(startTimeEpoch: number, endTimeEpoch: number, type: ActivityType) {
+        this.startTimeEpoch = startTimeEpoch;
+        this.endTimeEpoch = endTimeEpoch;
+        this.type = type;
+    }
+
+    readonly startTimeEpoch: number;
+    readonly endTimeEpoch: number;
+    readonly type: ActivityType;
+}
+
+export class DaysDataSource {
+    constructor() {
+        this.activityTree = new DataIntervalTree<Activity>();
+        this.daysData = [];
+    }
+
+    activityTree: ActivityTree;
+    daysData: Array<DayDataRow>;
+}
+
+export class DayDataRow {
+
+    constructor(dayLabel: string, dayStartEpoch: number, dayEndEpoch: number) {
+        this.dayLabel = dayLabel;
+        this.dayStartEpoch = dayStartEpoch;
+        this.dayEndEpoch = dayEndEpoch;
+    }
+
+    dayLabel: string;
+    dayStartEpoch: number;
+    dayEndEpoch: number;
+}
+
 export type DataArray = Array<DataRow>
+export type DaysDataArray = Array<DayDataRow>
+export type ActivityTree = DataIntervalTree<Activity>

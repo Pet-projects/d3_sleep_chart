@@ -1,6 +1,6 @@
 import {Control} from "./control";
 import {ControlsListener} from "./controlsListener";
-import {AppendableSelection, DataArray, DataRow} from "../domain"
+import {AppendableSelection, DataArray, DataRow, DayDataRow, DaysDataSource} from "../domain"
 
 const DEFAULT_SHOW_ONLY_MATCHING = false;
 
@@ -26,11 +26,11 @@ export class ShowOnlyMatchingControl implements Control {
         });
     }
 
-    updateVisualsWithNewData(data: DataArray) {
+    updateVisualsWithNewData(data: DaysDataSource) {
         //No need to update this data
     }
 
-    enrichData(d: DataRow) {
-        d._showOnlyMatchingCategory = this.showOnlyMatching;
+    enrichData(d: DayDataRow) {
+        // d._showOnlyMatchingCategory = this.showOnlyMatching;
    }
 }

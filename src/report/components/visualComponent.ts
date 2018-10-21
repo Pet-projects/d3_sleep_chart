@@ -1,8 +1,8 @@
 import {
-    DataArray,
+    DaysDataSource,
     TransitionCoordinator
 } from "../domain";
 
 export interface VisualComponent {
-    render(dataSelection: DataArray, t: TransitionCoordinator);
+    render(dataSelection: DaysDataSource, t: TransitionCoordinator);
 }

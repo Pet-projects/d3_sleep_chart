@@ -15,3 +15,7 @@ export function formatMinutes(d: number): string {
     }
     return output;
 }
+
+export function dateTimeToEpoch(date: string, hour: string): number {
+    return Date.parse(date + ", " + hour);
+}

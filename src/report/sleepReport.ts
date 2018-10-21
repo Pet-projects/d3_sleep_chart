@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import {VisualComponent} from './components/visualComponent';
-import {DataArray} from "./domain";
+import {DataArray, DaysDataSource} from "./domain";
 import {Control} from "./controls/control"
 import {ControlsListener} from "./controls/controlsListener"
 import {ShowOnlyMatchingControl} from "./controls/showOnlyMatchingControl"
@@ -8,6 +8,7 @@ import {SelectTimeRangeControl} from "./controls/selectTimeRangeControl"
 import {UrlParameters} from './utils/urlParameters'
 import {SelectLanguageControl} from "./controls/selectLanguageControl";
 import {SleepChart} from "./components/sleepChart";
+import {toActivityTree, toDaysArray} from "./data/transform";
 
 declare var $; // jQuery.
 
@@ -34,40 +35,19 @@ export function show(dataUrl: string) {
     //DEBT Can this be done without jQuery?
     $('.ui.dropdown').dropdown();
 
-    function computeAggregateData(d: d3.DSVRowAny): d3.DSVRowAny {
-        // Convert fields to nums
-        d["TClockTime"] = +d["TClockTime"];
-        d["TPenalties"] = +d["TPenalties"];
-        d["Total"] = +d["Total"];
 
-        // Convert times columns
-        for (let dataColumn of dataColumns) {
-            d[dataColumn] = +d[dataColumn];
-        }
-
-        // Convert coverage and keep the last value
-        d.overallTestCoverage = null;
-        for (let testCoverageColumn of testCoverageColumns) {
-            if (d[testCoverageColumn].trim().length > 0) {
-                d[testCoverageColumn] = +d[testCoverageColumn];
-                d.overallTestCoverage = d[testCoverageColumn];
-            } else {
-                d[testCoverageColumn] = NaN
-            }
-        }
-
-        return d;
-
-    }
-
-    d3.csv(dataUrl, computeAggregateData,
+    d3.csv(dataUrl,
         function (error, inboundData: d3.DSVParsedArray<any>) {
             if (error) throw error;
             if (!inboundData) {
                 window.alert("Failed to load candidate data.");
             }
 
-            sceneDirector.dataSourceChanged(inboundData);
+            let daysDataSource = new DaysDataSource();
+            daysDataSource.daysData = toDaysArray(inboundData);
+            daysDataSource.activityTree = toActivityTree(inboundData);
+
+            sceneDirector.dataSourceChanged(daysDataSource);
         });
 }
 
@@ -89,13 +69,13 @@ export function show(dataUrl: string) {
 class SceneDirector implements ControlsListener {
     hasRenderedData: any;
     isSlowMotion: boolean;
-    data: DataArray;
+    data: DaysDataSource;
     visualComponents: VisualComponent[];
     controls: Control[];
 
     constructor() {
         this.visualComponents = [];
-        this.data = [];
+        this.data = new DaysDataSource;
         this.controls = [];
 
 
@@ -120,7 +100,7 @@ class SceneDirector implements ControlsListener {
         control.registerListener(this);
     }
 
-    dataSourceChanged(inboundData: d3.DSVParsedArray<any>) {
+    dataSourceChanged(inboundData: DaysDataSource) {
         console.log("Data source changed");
         this.data = inboundData;
         this.controls.forEach(control => control.updateVisualsWithNewData(this.data));
@@ -138,7 +118,7 @@ class SceneDirector implements ControlsListener {
         if (this.hasRenderedData) {
             transitionDuration = this.isSlowMotion ? 7500 : 750;
         } else {
-            this.hasRenderedData = this.data.length > 0;
+            this.hasRenderedData = this.data.daysData.length > 0;
         }
         console.log("Transition duration set to: " + transitionDuration);
 
@@ -146,14 +126,10 @@ class SceneDirector implements ControlsListener {
             transition = d3.transition("all").duration(transitionDuration);
 
         this.visualComponents.forEach(c => c.render(enrichedData, transition));
-
-        var candidateData = enrichedData.filter(d => d._selectedCandidate)[0];
-        d3.select('#report-for-candidate').text(candidateData.Participant);
-        document.title = `Report for ${candidateData.Participant}`;
     }
 
     private enrichData() {
-        this.data.forEach(d => this.controls.forEach(control => control.enrichData(d)));
+        this.data.daysData.forEach(d => this.controls.forEach(control => control.enrichData(d)));
         return this.data;
     }
 }

@@ -3,13 +3,3 @@
 #control-language-selection + i + input + .text::after {
     content: '(Language)';
 }
-
-.main.container {
-    margin-top: 7em;
-}
-
-
-.clocktime-bar,
-.penalty-bar {
-    height: 15px;
-}

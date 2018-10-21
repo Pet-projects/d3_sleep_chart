@@ -94,15 +94,6 @@ h2.header {
     height: 30px;
 }
 
-
-svg text.label {
-    cursor: pointer;
-}
-
-svg text.label:hover {
-    font-weight: bolder;
-}
-
 #benchmark table td:nth-child(n+1){
     text-align: right;
 }

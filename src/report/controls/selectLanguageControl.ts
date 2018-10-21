@@ -1,6 +1,6 @@
 import { Control } from './control';
 import { ControlsListener } from './controlsListener';
-import { AppendableSelection, DataArray, DataRow } from '../domain';
+import {AppendableSelection, DataArray, DataRow, DaysDataSource, DayDataRow} from '../domain';
 
 export class SelectLanguageControl implements Control {
     private languageSelect: AppendableSelection;
@@ -17,12 +17,12 @@ export class SelectLanguageControl implements Control {
         });
     }
 
-    updateVisualsWithNewData(data: DataArray) {
+    updateVisualsWithNewData(data: DaysDataSource) {
         let languages = [];
         
-        data.forEach(item => {
-            if (languages.indexOf(item.Language) < 0) {
-                languages.push(item.Language);
+        data.daysData.forEach(item => {
+            if (languages.indexOf(item.dayStartEpoch) < 0) {
+                languages.push(item.dayEndEpoch);
             }
         });
         
@@ -38,11 +38,11 @@ export class SelectLanguageControl implements Control {
             .text(d => d);
     }
 
-    enrichData(item: DataRow) {
-        let selectedLanguage = this.languageSelect.property('value');
-
-        item._selectedLanguage =
-            selectedLanguage === this.allOption ||
-            selectedLanguage === item.Language;
+    enrichData(item: DayDataRow) {
+        // let selectedLanguage = this.languageSelect.property('value');
+        //
+        // item._selectedLanguage =
+        //     selectedLanguage === this.allOption ||
+        //     selectedLanguage === item.Language;
     }
 }

@@ -1,5 +1,11 @@
 import {
-    AppendableSelection, UpdatableSelection, DataArray, DataRow, TransitionCoordinator, PositionWithinSelectionRange
+    AppendableSelection,
+    UpdatableSelection,
+    DataArray,
+    DataRow,
+    TransitionCoordinator,
+    PositionWithinSelectionRange,
+    DaysDataSource
 } from "../domain";
 import {VisualComponent} from './visualComponent';
 import * as d3 from "d3";
@@ -69,44 +75,44 @@ export class SleepChart implements VisualComponent {
             .attr("id", "canvas");
 
         this.candidateComponents = [
-            new CategoryOverlay(),
             new CandidateLabel(),
             new CandidateRounds()
         ];
     }
 
-    render(dataSelection: DataArray, t: TransitionCoordinator) {
-        let fasterCount = dataSelection.filter(d => d._positionWithinSelectionRange == PositionWithinSelectionRange.FASTER).length,
-            slowerCount = dataSelection.filter(d => d._positionWithinSelectionRange == PositionWithinSelectionRange.SLOWER).length;
+    render(dataSelection: DaysDataSource, t: TransitionCoordinator) {
+        let daysData = dataSelection.daysData;
+        let fasterCount = daysData.filter(d => d._positionWithinSelectionRange == PositionWithinSelectionRange.FASTER).length,
+            slowerCount = daysData.filter(d => d._positionWithinSelectionRange == PositionWithinSelectionRange.SLOWER).length;
 
-        dataSelection = dataSelection
-            .filter(d =>
-                (!d._showOnlyMatchingCategory || d._selectedCandidate || d._selectedBenchmark) &&
-                d._positionWithinSelectionRange === PositionWithinSelectionRange.WITHIN &&
-                d._selectedLanguage)
-            .sort((a, b) => {
-                let compareTotal = a.Total - b.Total,
-                    compareFirstRound = a["R1"] - b["R1"];
-                return a.Total != b.Total ? compareTotal : compareFirstRound;
-            });
+        // dataSelection = daysData
+        //     .filter(d =>
+        //         (!d._showOnlyMatchingCategory || d._selectedCandidate || d._selectedBenchmark) &&
+        //         d._positionWithinSelectionRange === PositionWithinSelectionRange.WITHIN &&
+        //         d._selectedLanguage)
+        //     .sort((a, b) => {
+        //         let compareTotal = a.Total - b.Total,
+        //             compareFirstRound = a["R1"] - b["R1"];
+        //         return a.Total != b.Total ? compareTotal : compareFirstRound;
+        //     });
 
         // Update container height
-        let height = ROW_HEIGHT * (dataSelection.length + 2); // Data rows + 2 info rows.
+        let height = ROW_HEIGHT * (daysData.length + 2); // Data rows + 2 info rows.
         this.svg.transition(t).attr("height", height + MARGIN.top + MARGIN.bottom);
 
         //~~~~~ Bind axes
 
         let x = d3.scaleLinear().range([0, this.width]);
-        let maxValue = d3.max(dataSelection, d => d["Total"]) as number;
+        let maxValue = d3.max(daysData, d => d["Total"]) as number;
         x.domain([0, maxValue] as Array<number>).nice();
 
         let y = d3.scaleBand().rangeRound([0, height]).padding(0.1).paddingOuter(1);
-        y.domain(dataSelection.map(d => d["Participant"]));
+        y.domain(daysData.map(d => d["Participant"]));
 
         //~~~~ Create nodes for new candidates
 
         let candidate = this.canvas.selectAll("g.candidate")
-            .data(dataSelection, d => d["Participant"] as string);
+            .data(daysData, d => d["Participant"] as string);
 
 
         let candidateEnter = candidate.enter()
@@ -190,16 +196,6 @@ interface ChartComponent {
     remove(selection: UpdatableSelection, x: XScale, y: YScale)
 }
 
-class ConditionalStyle {
-    readonly criteria: (d: DataRow) => boolean;
-    readonly stylingFunc: (selection: UpdatableSelection) => any;
-
-    constructor(criteria: (d: DataRow) => boolean, stylingFunc: (selection: UpdatableSelection) => any) {
-        this.criteria = criteria;
-        this.stylingFunc = stylingFunc;
-    }
-}
-
 class CandidateLabel implements ChartComponent {
 
     create(selection: AppendableSelection, x: XScale, y: YScale) {
@@ -209,16 +205,7 @@ class CandidateLabel implements ChartComponent {
             .attr("y", y.bandwidth() / 2)
             .attr("dy", ".35em")
             .attr("text-anchor", "start")
-            .text(d => d.Participant)
-            .on("click", (d) => {
-                d3.select("#leaderboard-select-as .candidate").classed('hidden', false);
-                d3.select("#leaderboard-select-as")
-                    .classed('hidden', false)
-                    .style('left', `${d3.event.pageX - 10}px`)
-                    .style('top', `${d3.event.pageY - 28}px`)
-                    .select('.selection')
-                    .text(d.Participant);
-            });
+            .text(d => d.Participant);
 
         selection.append("text").attr("class", "label benchmark")
             .style("opacity", 1)
@@ -227,16 +214,7 @@ class CandidateLabel implements ChartComponent {
             .attr("dy", ".35em")
             .attr("text-anchor", "start")
             .attr('fill', '#82929f')
-            .text(d => `| ${d.Group}`)
-            .on("click", (d) => {
-                d3.select("#leaderboard-select-as .candidate").classed('hidden', true);
-                d3.select("#leaderboard-select-as")
-                    .classed('hidden', false)
-                    .style('left', `${d3.event.pageX - 10}px`)
-                    .style('top', `${d3.event.pageY - 28}px`)
-                    .select('.selection')
-                    .text(d.Group);
-            });
+            .text(d => `| ${d.Group}`);
 
         selection.append('rect').attr("class", "label")
             .style("fill", 'none')
@@ -296,86 +274,4 @@ class CandidateRounds implements ChartComponent {
 }
 
 
-class CategoryOverlay implements ChartComponent {
-    private overlayStyles: ConditionalStyle[];
-
-    constructor() {
-        this.overlayStyles = [
-
-            // Styles for when rounds are displayed
-            new ConditionalStyle(
-                d => d._showRounds && !(d._selectedCandidate || d._selectedBenchmark),
-                selection => selection
-                    .style("fill-opacity", 0.5)
-                    .style("fill", "#fff")
-                    .style("stroke-width", 0)
-            ),
-            new ConditionalStyle(
-                d => d._showRounds && d._selectedBenchmark,
-                selection => selection
-                    .style("fill-opacity", 0)
-                    .style("stroke", ColourCode.benchmark())
-                    .style("stroke-width", 1)
-            ),
-            new ConditionalStyle(
-                d => d._showRounds && d._selectedCandidate,
-                selection => selection
-                    .style("fill-opacity", 0)
-                    .style("stroke", ColourCode.candidate())
-                    .style("stroke-width", 3)
-            ),
-
-            // Styles for when no rounds are showing
-            new ConditionalStyle(
-                d => !d._showRounds && !(d._selectedCandidate || d._selectedBenchmark),
-                selection => selection
-                    .style("fill-opacity", 1)
-                    .style("stroke-width", 0)
-                    .style("fill", ColourCode.others())
-            ),
-            new ConditionalStyle(
-                d => !d._showRounds && d._selectedBenchmark,
-                selection => selection
-                    .style("fill-opacity", 1)
-                    .style("stroke-width", 0)
-                    .style("fill", ColourCode.benchmark())
-            ),
-            new ConditionalStyle(
-                d => !d._showRounds && d._selectedCandidate,
-                selection => selection
-                    .style("fill-opacity", 1)
-                    .style("stroke-width", 0)
-                    .style("fill", ColourCode.candidate())
-            )
-        ];
-    }
-
-    create(selection: AppendableSelection, x: XScale, y: YScale) {
-        selection.append("rect").attr("class", "categoryOverlay")
-            .style("fill-opacity", 0)
-            .style("fill", ColourCode.candidate())
-            .attr("width", (d: DataRow) => x(d.Total))
-            .attr("height", y.bandwidth());
-    }
-
-    update(selection: UpdatableSelection, x: XScale, y: YScale) {
-        let overlayUpdate = selection.select("rect.categoryOverlay");
-
-        for (let conditionalStyle of this.overlayStyles) {
-            let selection = overlayUpdate.filter(conditionalStyle.criteria);
-            selection.call(conditionalStyle.stylingFunc);
-        }
-
-        overlayUpdate.call(function () {
-        })
-            .attr("width", function (d: DataRow) {
-                return x(d.Total);
-            })
-            .attr("height", y.bandwidth());
-    }
-
-    remove(selection: UpdatableSelection, x: XScale, y: YScale) {
-        // Do nothing
-    }
-}
 
