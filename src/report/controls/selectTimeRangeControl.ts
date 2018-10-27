@@ -1,6 +1,6 @@
 import {Control} from "./control";
 import {ControlsListener} from "./controlsListener";
-import {AppendableSelection, DataArray, DataRow, DaysDataSource, DayDataRow, PositionWithinSelectionRange} from "../domain"
+import {AppendableSelection, DataArray, DataRow, DaysDataSource, DayDataRow} from "../domain"
 import {UrlParameters} from '../utils/urlParameters';
 import * as d3 from "d3";
 import * as noUiSlider from "nouislider"
@@ -56,8 +56,8 @@ export class SelectTimeRangeControl implements Control {
 
         this.candidateTimeCutoff = new CandidateTimeCutoff(UrlParameters.getRangeFrom(), UrlParameters.getRangeTo());
 
-        let minValue = SelectTimeRangeControl.floorTo(MINUTES_IN_HALF_HOUR, d3.min([], d => d.Total));
-        let maxValue = SelectTimeRangeControl.ceilTo(MINUTES_IN_HALF_HOUR, d3.max([], d => d.Total));
+        let minValue = SelectTimeRangeControl.floorTo(MINUTES_IN_HALF_HOUR, d3.min([1], d => d));
+        let maxValue = SelectTimeRangeControl.ceilTo(MINUTES_IN_HALF_HOUR, d3.max([2], d => d));
 
         let range = {
             'min': minValue,

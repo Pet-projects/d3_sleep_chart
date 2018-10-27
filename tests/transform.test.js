@@ -15,6 +15,8 @@ describe('Data transform', function () {
     it('Extracts the days from ', function () {
         const inputCsv =
             "Date,TimeStart,TimeEnd,ActivePct\n" +
+            "5-Aug-2018,00:00,01:00,0\n" +
+            "6-Aug-2018,01:00,02:00,0\n" +
             "6-Aug-2018,05:00,06:00,100\n" +
             "8-Aug-2018,05:00,06:00,\n" +
             "9-Aug-2018,12:00,,100\n" +
@@ -25,6 +27,7 @@ describe('Data transform', function () {
 
         expect(daysArray).toEqual([
             new DayDataRow("6-Aug-2018", dateTimeToEpoch("6-Aug-2018", "00:00"), dateTimeToEpoch("7-Aug-2018", "00:00")),
+            new DayDataRow("5-Aug-2018", dateTimeToEpoch("5-Aug-2018", "00:00"), dateTimeToEpoch("6-Aug-2018", "00:00")),
         ]);
     });
 

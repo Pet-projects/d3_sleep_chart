@@ -6,8 +6,9 @@ import {dateTimeToEpoch} from "../utils/time";
 const ONE_DAY = 1000 * 60 * 60 * 24;
 
 export function toDaysArray(rawData: d3.DSVParsedArray<any>): DaysDataArray {
-    let daysDataArray = [];
+    let daysDataMap = new Map<string, DayDataRow>();
 
+    // Identify all the days in the data-set
     for (let rawDataRow of rawData) {
         if ("Date" in rawDataRow && rawDataRow["Date"] != "" &&
             "TimeStart" in rawDataRow && rawDataRow["TimeStart"] != "" &&
@@ -17,11 +18,13 @@ export function toDaysArray(rawData: d3.DSVParsedArray<any>): DaysDataArray {
             let dayStartEpoch = dateTimeToEpoch(dayLabel, "00:00");
             let dayEndEpoch = dayStartEpoch + ONE_DAY;
 
-            daysDataArray.push(new DayDataRow(dayLabel, dayStartEpoch, dayEndEpoch))
+            daysDataMap.set(dayLabel, new DayDataRow(dayLabel, dayStartEpoch, dayEndEpoch))
         }
     }
 
-    return daysDataArray
+    // Extract the unique values for days sorted in descending order
+    return Array.from(daysDataMap, tuple => tuple[1])
+        .sort((a, b) => b.dayStartEpoch - a.dayStartEpoch);
 }
 
 export function toActivityTree(rawData: d3.DSVParsedArray<any>): ActivityTree {

@@ -4,8 +4,7 @@ import {
     DataArray,
     DataRow,
     TransitionCoordinator,
-    PositionWithinSelectionRange,
-    DaysDataSource
+    DaysDataSource, DayDataRow
 } from "../domain";
 import {VisualComponent} from './visualComponent';
 import * as d3 from "d3";
@@ -76,16 +75,12 @@ export class SleepChart implements VisualComponent {
 
         this.candidateComponents = [
             new CandidateLabel(),
-            new CandidateRounds()
+            // new CandidateRounds()
         ];
     }
 
-    render(dataSelection: DaysDataSource, t: TransitionCoordinator) {
-        let daysData = dataSelection.daysData;
-        let fasterCount = daysData.filter(d => d._positionWithinSelectionRange == PositionWithinSelectionRange.FASTER).length,
-            slowerCount = daysData.filter(d => d._positionWithinSelectionRange == PositionWithinSelectionRange.SLOWER).length;
-
-        // dataSelection = daysData
+    render(wholeDataSet: DaysDataSource, t: TransitionCoordinator) {
+        let dataSelection = wholeDataSet.daysData;
         //     .filter(d =>
         //         (!d._showOnlyMatchingCategory || d._selectedCandidate || d._selectedBenchmark) &&
         //         d._positionWithinSelectionRange === PositionWithinSelectionRange.WITHIN &&
@@ -97,38 +92,38 @@ export class SleepChart implements VisualComponent {
         //     });
 
         // Update container height
-        let height = ROW_HEIGHT * (daysData.length + 2); // Data rows + 2 info rows.
+        // let height = ROW_HEIGHT * dataSelection.length;
+        let height = ROW_HEIGHT * dataSelection.length;
         this.svg.transition(t).attr("height", height + MARGIN.top + MARGIN.bottom);
 
         //~~~~~ Bind axes
 
         let x = d3.scaleLinear().range([0, this.width]);
-        let maxValue = d3.max(daysData, d => d["Total"]) as number;
+        let maxValue = d3.max(dataSelection, d => d["Total"]) as number;
         x.domain([0, maxValue] as Array<number>).nice();
 
         let y = d3.scaleBand().rangeRound([0, height]).padding(0.1).paddingOuter(1);
-        y.domain(daysData.map(d => d["Participant"]));
+        y.domain(dataSelection.map((d: DayDataRow) => d.dayLabel));
 
         //~~~~ Create nodes for new candidates
 
-        let candidate = this.canvas.selectAll("g.candidate")
-            .data(daysData, d => d["Participant"] as string);
-
+        let candidate = this.canvas.selectAll("g.dayRow")
+            .data(dataSelection, (d: DayDataRow) => d.dayLabel);
 
         let candidateEnter = candidate.enter()
-            .append("g").attr("class", "candidate")
+            .append("g").attr("class", "dayRow")
             .attr("transform",
-                (d, i) => "translate(0," + (y(d["Participant"]) + height * this.getTransitionDirection(d._previousPositionWithinSelectionRange)) + ")")
+                (d: DayDataRow, i) => "translate(0," + (y(d.dayLabel) + height) + ")")
             .call((s) => this.candidateComponents.forEach(comp => comp.create(s, x, y)));
 
         let candidateUpdate = candidate.merge(candidateEnter);
         candidateUpdate.transition(t)
             .attr("transform",
-                (d, i) => "translate(0," + (d._y0 = y(d["Participant"])) + ")")
+                (d: DayDataRow, i) => "translate(0," + (d._y0 = y(d.dayLabel)) + ")")
             .call((s) => this.candidateComponents.forEach(comp => comp.update(s, x, y)));
 
         candidate.exit().transition(t)
-            .attr("transform", (d: any) => `translate(0, ${d._y0 + height * this.getTransitionDirection(d._positionWithinSelectionRange)})`)
+            .attr("transform", (d: DayDataRow) => `translate(0, ${d._y0 + height})`)
             .call((s) => this.candidateComponents.forEach(comp => comp.remove(s, x, y)))
             .remove();
 
@@ -145,46 +140,12 @@ export class SleepChart implements VisualComponent {
                 .tickValues(tickValues)
                 .tickSize(-height) as any);
 
-        if (fasterCount > 0) {
-            this.gTopAxisInfoText
-                .style("display", "initial")
-                .text("Faster candidates hidden by filter: " + fasterCount);
-
-            this.gTopAxisInfoRect.transition(t)
-                .style('display', 'initial')
-                .attr('width', 240)
-                .attr('height', 16);
-        } else {
-            this.gTopAxisInfoText.style("display", "none");
-            this.gTopAxisInfoRect.style('display', 'none');
-        }
-        
         this.gBottomAxis.transition(t)
             .attr("transform", "translate(0, " + height + ")")
             .call(d3.axisBottom(x)
                 .tickFormat((numberLike, index) => formatMinutes(numberLike.valueOf()))
                 .tickValues(tickValues)
                 .tickSize(0));
-
-        if (slowerCount > 0) {
-            this.gBottomAxisInfoText.transition(t)
-                .attr("transform", `translate(5, ${height - 5})`)
-                .style("display", "initial")
-                .text("Slower candidates hidden by filter: " + slowerCount);
-            
-            this.gBottomAxisInfoRect.transition(t)
-                .attr('transform', `translate(3, ${height - 20})`)
-                .style('display', 'initial')
-                .attr('width', 250)
-                .attr('height', 17);
-        } else {
-            this.gBottomAxisInfoText.style("display", "none");
-            this.gBottomAxisInfoRect.style('display', 'none');
-        }
-    }
-
-    private getTransitionDirection(p: PositionWithinSelectionRange): number {
-        return p == PositionWithinSelectionRange.FASTER ? -1 : 1;
     }
 }
 
@@ -205,7 +166,7 @@ class CandidateLabel implements ChartComponent {
             .attr("y", y.bandwidth() / 2)
             .attr("dy", ".35em")
             .attr("text-anchor", "start")
-            .text(d => d.Participant);
+            .text((d: DayDataRow) => d.dayLabel);
 
         selection.append("text").attr("class", "label benchmark")
             .style("opacity", 1)
@@ -214,7 +175,7 @@ class CandidateLabel implements ChartComponent {
             .attr("dy", ".35em")
             .attr("text-anchor", "start")
             .attr('fill', '#82929f')
-            .text(d => `| ${d.Group}`);
+            .text((d: DayDataRow) => `| ${d.dayStartEpoch}`);
 
         selection.append('rect').attr("class", "label")
             .style("fill", 'none')

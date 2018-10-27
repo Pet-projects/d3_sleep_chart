@@ -7,19 +7,12 @@ export type UpdatableSelection = d3.Transition<any, any, any, any>
 // noinspection JSAnnotator
 export type AppendableSelection = d3.Selection<any, any, any, any>
 
-export enum PositionWithinSelectionRange  {
-    FASTER,
-    WITHIN,
-    SLOWER
-}
 
 export class DataRow implements d3.DSVRowAny {
     // Injected context
     _showRounds: boolean;
     _selectedCandidate: boolean;
     _selectedBenchmark: boolean;
-    _positionWithinSelectionRange: PositionWithinSelectionRange;
-    _previousPositionWithinSelectionRange: PositionWithinSelectionRange;
     _showOnlyMatchingCategory: boolean;
     _selectedLanguage: boolean;
 
@@ -80,9 +73,16 @@ export class DayDataRow {
         this.dayEndEpoch = dayEndEpoch;
     }
 
+    // The day represented as String (eq 13-Aug-2018)
     dayLabel: string;
+
+    // The start of the day represented as timestamp
     dayStartEpoch: number;
+    // The end of the day represented as timestamp
     dayEndEpoch: number;
+
+    // Keep track of the render Y
+    _y0: number;
 }
 
 export type DataArray = Array<DataRow>
