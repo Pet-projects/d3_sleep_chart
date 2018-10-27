@@ -1,6 +1,6 @@
 
 
-export function formatMinutes(d: number): string {
+export function formatMinutesAsPrettyString(d: number): string {
     if (d === 0)
         return '0';
 
@@ -18,4 +18,15 @@ export function formatMinutes(d: number): string {
 
 export function dateTimeToEpoch(date: string, hour: string): number {
     return Date.parse(date + ", " + hour);
+}
+
+function pad(num) {
+    return ("0"+num).slice(-2);
+}
+
+export function timestampToHourAndMinutes(timestamp: number): string {
+    const date = new Date(timestamp);
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    return pad(hours)+":"+pad(minutes)
 }

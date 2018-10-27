@@ -8,7 +8,7 @@ import {
 } from "../domain";
 import {VisualComponent} from './visualComponent';
 import * as d3 from "d3";
-import {formatMinutes} from "../utils/time";
+import {formatMinutesAsPrettyString, timestampToHourAndMinutes} from "../utils/time";
 import {ColourCode} from "../colourCode";
 
 type XScale = d3.ScaleLinear<number, number>
@@ -19,7 +19,7 @@ let dataColumns = ["R1", "X1", "R2", "X2", "R3", "X3", "R4", "X4", "R5", "X5", "
 
 const MARGIN = {
     top: 50,
-    right: 20,
+    right: 1,
     bottom: 30,
     left: 200
 };
@@ -92,14 +92,14 @@ export class SleepChart implements VisualComponent {
         //     });
 
         // Update container height
-        // let height = ROW_HEIGHT * dataSelection.length;
         let height = ROW_HEIGHT * dataSelection.length;
         this.svg.transition(t).attr("height", height + MARGIN.top + MARGIN.bottom);
 
         //~~~~~ Bind axes
 
         let x = d3.scaleLinear().range([0, this.width]);
-        let maxValue = d3.max(dataSelection, d => d["Total"]) as number;
+        let firstRecord = dataSelection[0];
+        let maxValue = firstRecord.dayEndEpoch - firstRecord.dayStartEpoch;
         x.domain([0, maxValue] as Array<number>).nice();
 
         let y = d3.scaleBand().rangeRound([0, height]).padding(0.1).paddingOuter(1);
@@ -129,21 +129,22 @@ export class SleepChart implements VisualComponent {
 
         //~~~~ Update the axis
 
-        let axisQuadrants = 8;
-        let minTimeIncrement = 30;
-        let tickStep = Math.round(maxValue / (axisQuadrants * minTimeIncrement)) * minTimeIncrement;
-        let tickValues = d3.range(0, maxValue, tickStep);
+        let axisQuadrants = 24;
+        let tickStep = Math.round(maxValue / axisQuadrants);
+        let tickValues = d3.range(0, maxValue + 1, tickStep);
 
         this.gTopAxis.transition(t)
             .call(d3.axisTop(x)
-                .tickFormat((numberLike, index) => formatMinutes(numberLike.valueOf()))
+                .tickFormat((numberLike, index) =>
+                    timestampToHourAndMinutes(firstRecord.dayStartEpoch + numberLike.valueOf()))
                 .tickValues(tickValues)
                 .tickSize(-height) as any);
 
         this.gBottomAxis.transition(t)
             .attr("transform", "translate(0, " + height + ")")
             .call(d3.axisBottom(x)
-                .tickFormat((numberLike, index) => formatMinutes(numberLike.valueOf()))
+                .tickFormat((numberLike, index) =>
+                    timestampToHourAndMinutes(firstRecord.dayStartEpoch + numberLike.valueOf()))
                 .tickValues(tickValues)
                 .tickSize(0));
     }
