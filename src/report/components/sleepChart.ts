@@ -183,12 +183,12 @@ class DayLabel implements ChartComponent {
 
         selection.append("text").attr("class", "label benchmark")
             .style("opacity", 1)
-            .attr("x", -110)
+            .attr("x", -90)
             .attr("y", y.bandwidth() / 2)
             .attr("dy", ".35em")
             .attr("text-anchor", "start")
             .attr('fill', '#82929f')
-            .text((d: DayDataRow) => `| ${d.dayStartEpoch}`);
+            .text((d: DayDataRow) => `| ${0}`);
 
         selection.append('rect').attr("class", "label")
             .style("fill", 'none')
