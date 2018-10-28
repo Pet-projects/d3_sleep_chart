@@ -41,7 +41,7 @@ export function toActivityTree(rawData: d3.DSVParsedArray<any>): ActivityTree {
         // Parse CSV entry
         let timeStart:number = dateTimeToEpoch(currentDate, rawDataRow["TimeStart"]);
         let timeEnd:number = dateTimeToEpoch(currentDate, rawDataRow["TimeEnd"]);
-        let activePct:number = +rawDataRow["ActivePct"];
+        let activePct:number = +rawDataRow["ActivePct"].replace("%","");
 
         // Add any sleeps
         let sleepPct = 100 - activePct;
