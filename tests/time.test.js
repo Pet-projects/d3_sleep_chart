@@ -2,6 +2,7 @@
 exports.__esModule = true;
 const dateTimeToEpoch = require("../src/report/utils/time").dateTimeToEpoch;
 const epochToDateTime = require("../src/report/utils/time").epochToDateTime;
+const epochToDateTimeWithSep = require("../src/report/utils/time").epochToDateTimeWithSep;
 const formatMinutesAsPrettyString = require("../src/report/utils/time").formatMinutesAsPrettyString;
 const timestampToHourAndMinutes = require("../src/report/utils/time").timestampToHourAndMinutes;
 
@@ -15,6 +16,11 @@ describe('Time utils', function () {
     it('epochToDateTime can display date', function () {
         expect(epochToDateTime(dateTimeToEpoch("6-Aug-2018", "00:00")))
             .toBe("6-Aug-2018_00:00");
+    });
+
+    it('epochToDateTime can display date with separator', function () {
+        expect(epochToDateTimeWithSep(dateTimeToEpoch("6-Aug-2018", "00:00"), ","))
+            .toBe("6-Aug-2018,00:00");
     });
 
     it('formatMinutesAsPrettyString can format minutes into pretty strings', function () {

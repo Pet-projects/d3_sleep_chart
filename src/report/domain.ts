@@ -41,7 +41,7 @@ export class DataRow implements d3.DSVRowAny {
 
 export enum ActivityType {
     SLEEP,
-    FEED,
+    FEED
 }
 
 export class Activity {

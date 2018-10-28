@@ -5,9 +5,11 @@ const d3 = require("d3");
 const Activity = require("../src/report/domain").Activity;
 const ActivityType = require("../src/report/domain").ActivityType;
 const DayDataRow = require("../src/report/domain").DayDataRow;
-const toActivityTree = require("../src/report/data/transform").toActivityTree;
+const toActivityTreeV1 = require("../src/report/data/transform").toActivityTreeV1;
+const toActivityTreeV2 = require("../src/report/data/transform").toActivityTreeV2;
 const toDaysArray = require("../src/report/data/transform").toDaysArray;
 const dateTimeToEpoch = require("../src/report/utils/time").dateTimeToEpoch;
+const epochToDateTimeWithSep = require("../src/report/utils/time").epochToDateTimeWithSep;
 
 
 describe('Data transform', function () {
@@ -31,7 +33,8 @@ describe('Data transform', function () {
         ]);
     });
 
-    it('Converts raw csv into activity intervals', function () {
+    //DEBT: Deprecated - remove once transitioned to the new format
+    it('toActivityTreeV1 - Converts raw csv into activity intervals', function () {
         const inputCsv =
             "Date,TimeStart,TimeEnd,ActivePct\n" +
             "6-Aug-2018,05:00,06:00,0%\n" +
@@ -39,7 +42,7 @@ describe('Data transform', function () {
             "6-Aug-2018,18:00,19:00,50%\n" +
             "7-Aug-2018,02:00,02:30,0%";
 
-        let activityDataIntervalTree = toActivityTree(d3.csvParse(inputCsv));
+        let activityDataIntervalTree = toActivityTreeV1(d3.csvParse(inputCsv));
 
         // Return all
         const activities = activityDataIntervalTree.search(0, Number.MAX_SAFE_INTEGER);
@@ -54,6 +57,24 @@ describe('Data transform', function () {
         ]);
     });
 
+    it('toActivityTreeV2 - Converts raw csv into activity intervals', function () {
+        const inputCsv =
+            "Date,TimeStart,TimeEnd,ActivityId,ActivityName\n" +
+            "19-Aug-2018,21:43,22:05,1,FEED\n" +
+            "19-Aug-2018,22:05,03:50,0,SLEEP\n" +
+            "20-Aug-2018,03:50,04:11,1,FEED";
+
+        let activityDataIntervalTree = toActivityTreeV2(d3.csvParse(inputCsv));
+
+        // Return all
+        const activities = activityDataIntervalTree.search(0, Number.MAX_SAFE_INTEGER);
+        expect(activities).toEqual([
+            new Activity(dateTimeToEpoch("19-Aug-2018", "21:43"), dateTimeToEpoch("19-Aug-2018", "22:05"), ActivityType.FEED),
+            new Activity(dateTimeToEpoch("19-Aug-2018", "22:05"), dateTimeToEpoch("20-Aug-2018", "03:50"), ActivityType.SLEEP),
+            new Activity(dateTimeToEpoch("20-Aug-2018", "03:50"), dateTimeToEpoch("20-Aug-2018", "04:11"), ActivityType.FEED),
+        ]);
+    });
+
     it('Indexes activities to enable search', function () {
         const inputCsv =
             "Date,TimeStart,TimeEnd,ActivePct\n" +
@@ -62,7 +83,7 @@ describe('Data transform', function () {
             "6-Aug-2018,18:00,19:00,50%\n" +
             "7-Aug-2018,02:00,02:30,0%";
 
-        let activityDataIntervalTree = toActivityTree(d3.csvParse(inputCsv));
+        let activityDataIntervalTree = toActivityTreeV1(d3.csvParse(inputCsv));
 
         // Search by tight interval
         const activities = activityDataIntervalTree.search(
@@ -73,5 +94,30 @@ describe('Data transform', function () {
             new Activity(dateTimeToEpoch("6-Aug-2018", "15:00"), dateTimeToEpoch("6-Aug-2018", "17:00"), ActivityType.SLEEP),
             new Activity(dateTimeToEpoch("6-Aug-2018", "18:00"), dateTimeToEpoch("6-Aug-2018", "19:00"), ActivityType.FEED),
         ]);
-    })
+    });
+
+
+    //DEBT: Deprecated - remove once transitioned to the new format
+    it('Converts file to new format', function () {
+        var fs = require('fs');
+        var inputCsv = fs.readFileSync('./dist/data/testData.csv','utf8');
+
+        let activityDataIntervalTree = toActivityTreeV1(d3.csvParse(inputCsv));
+
+        const activities = activityDataIntervalTree.search(0, Number.MAX_SAFE_INTEGER);
+
+        var stream = fs.createWriteStream("my_file.txt");
+
+        stream.once('open', function(fd) {
+            activities.forEach(a => {
+                var asString =
+                    epochToDateTimeWithSep(a.startTimeEpoch, ",") + ","
+                    + epochToDateTimeWithSep(a.endTimeEpoch, ",") + ","
+                    + a.type + ","+ActivityType[a.type];
+
+                stream.write(asString+"\n")
+            });
+            stream.end();
+        });
+    });
 });

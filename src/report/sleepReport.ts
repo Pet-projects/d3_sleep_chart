@@ -8,7 +8,7 @@ import {SelectTimeRangeControl} from "./controls/selectTimeRangeControl"
 import {UrlParameters} from './utils/urlParameters'
 import {SelectLanguageControl} from "./controls/selectLanguageControl";
 import {SleepChart} from "./components/sleepChart";
-import {toActivityTree, toDaysArray} from "./data/transform";
+import {toActivityTreeV1, toActivityTreeV2, toDaysArray} from "./data/transform";
 
 declare var $; // jQuery.
 
@@ -45,7 +45,7 @@ export function show(dataUrl: string) {
 
             let daysDataSource = new DaysDataSource();
             daysDataSource.daysData = toDaysArray(inboundData);
-            daysDataSource.activityTree = toActivityTree(inboundData);
+            daysDataSource.activityTree = toActivityTreeV2(inboundData);
 
             sceneDirector.dataSourceChanged(daysDataSource);
         });

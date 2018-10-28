@@ -23,7 +23,7 @@ export function dateTimeToEpoch(date: string, hour: string): number {
 const MONTH_NAMES = [
     "Jan", "Feb", "Mar",
     "Apr", "May", "Jun", "Jul",
-    "Aug", "Sept", "Oct",
+    "Aug", "Sep", "Oct",
     "Nov", "Dec"
 ];
 
@@ -32,8 +32,12 @@ function pad(num) {
 }
 
 export function epochToDateTime(timestamp: number): string {
+    return epochToDateTimeWithSep(timestamp, "_");
+}
+
+export function epochToDateTimeWithSep(timestamp: number, separator: string): string {
     let d = new Date(timestamp);
-    return d.getDate() + "-" + MONTH_NAMES[d.getMonth()] + "-" + d.getFullYear() + "_" +
+    return d.getDate() + "-" + MONTH_NAMES[d.getMonth()] + "-" + d.getFullYear() + separator +
         pad(d.getHours()) + ":" + pad(d.getMinutes());
 }
 
