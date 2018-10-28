@@ -1,5 +1,6 @@
 import * as d3 from "d3";
 import {default as DataIntervalTree, IntervalTree} from "node-interval-tree";
+import {epochToDateTime} from "./utils/time";
 
 
 export type TransitionCoordinator = d3.Transition<any, any, any, any>
@@ -48,8 +49,12 @@ export class Activity {
         this.startTimeEpoch = startTimeEpoch;
         this.endTimeEpoch = endTimeEpoch;
         this.type = type;
+
+        let activityName = ActivityType[this.type];
+        this.asString = activityName+" from "+epochToDateTime(this.startTimeEpoch)+" to "+epochToDateTime(this.endTimeEpoch)
     }
 
+    readonly asString: string;
     readonly startTimeEpoch: number;
     readonly endTimeEpoch: number;
     readonly type: ActivityType;
@@ -71,6 +76,9 @@ export class DayDataRow {
         this.dayLabel = dayLabel;
         this.dayStartEpoch = dayStartEpoch;
         this.dayEndEpoch = dayEndEpoch;
+
+        this._activities = [];
+        this._y0 = 0;
     }
 
     // The day represented as String (eq 13-Aug-2018)
@@ -80,6 +88,9 @@ export class DayDataRow {
     dayStartEpoch: number;
     // The end of the day represented as timestamp
     dayEndEpoch: number;
+
+    // Day activities - will refresh based on the controls
+    _activities: Activity[];
 
     // Keep track of the render Y
     _y0: number;

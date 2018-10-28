@@ -4,7 +4,7 @@ import {
     DataArray,
     DataRow,
     TransitionCoordinator,
-    DaysDataSource, DayDataRow
+    DaysDataSource, DayDataRow, Activity, ActivityType
 } from "../domain";
 import {VisualComponent} from './visualComponent';
 import * as d3 from "d3";
@@ -74,8 +74,8 @@ export class SleepChart implements VisualComponent {
             .attr("id", "canvas");
 
         this.candidateComponents = [
-            new CandidateLabel(),
-            // new CandidateRounds()
+            new DayLabel(),
+            new DayEvents()
         ];
     }
 
@@ -90,6 +90,18 @@ export class SleepChart implements VisualComponent {
         //             compareFirstRound = a["R1"] - b["R1"];
         //         return a.Total != b.Total ? compareTotal : compareFirstRound;
         //     });
+
+        // Update the activities for each day based on the controls
+        let wholeActivityTree = wholeDataSet.activityTree;
+        dataSelection.forEach((d: DayDataRow) => {
+            // Get all activities for day
+            let activitiesForDay = wholeActivityTree.search(d.dayStartEpoch, d.dayEndEpoch);
+
+            // Adjust start and end time
+            d._activities = activitiesForDay.map(a =>
+                new Activity(Math.max(a.startTimeEpoch, d.dayStartEpoch), Math.min(a.endTimeEpoch, d.dayEndEpoch), a.type)
+            )
+        });
 
         // Update container height
         let height = ROW_HEIGHT * dataSelection.length;
@@ -158,7 +170,7 @@ interface ChartComponent {
     remove(selection: UpdatableSelection, x: XScale, y: YScale)
 }
 
-class CandidateLabel implements ChartComponent {
+class DayLabel implements ChartComponent {
 
     create(selection: AppendableSelection, x: XScale, y: YScale) {
         selection.append("text").attr("class", "label candidate")
@@ -197,40 +209,53 @@ class CandidateLabel implements ChartComponent {
     }
 }
 
-class CandidateRounds implements ChartComponent {
+
+class VisualActivity {
+
+    constructor(id: string, x: number, width: number, type: ActivityType) {
+        this.id = id;
+        this.x = x;
+        this.width = width;
+        this.type = type;
+    }
+
+    id: string;
+    x: number;
+    width: number;
+    type: ActivityType;
+}
+
+class DayEvents implements ChartComponent {
 
     create(selection: AppendableSelection, x: XScale, y: YScale) {
-        let rounds = selection.selectAll("rect.roundTime")
-            .data(function (d) {
-                let rounds = [];
-                let offset = 0;
-                for (let dataColumn of dataColumns) {
-                    let value = d[dataColumn];
-                    rounds.push({"id": dataColumn, "offset": offset, "value": value});
-                    offset += value;
-                }
-                return rounds;
-            }, (r) => r["id"]);
+        let rounds = selection.selectAll("rect.dayEvents")
+            .data((d: DayDataRow) =>
+                    d._activities.map(a => new VisualActivity(
+                        a.startTimeEpoch+"",
+                        a.startTimeEpoch-d.dayStartEpoch,
+                        a.endTimeEpoch - a.startTimeEpoch,
+                        a.type)),
+                (va:VisualActivity) => va.id);
 
         rounds.enter()
-            .insert("rect", "rect.categoryOverlay").attr("class", "roundTime")
+            .insert("rect").attr("class", "dayEvents")
             .style("opacity", 0)
-            .style("fill", r => ColourCode.forRound(r["id"]))
-            .attr("x", r => x(r["offset"]))
-            .attr("width", r => x(r["value"]))
+            .style("fill", (va:VisualActivity) => ColourCode.forActivity(va.type))
+            .attr("x", (va:VisualActivity) => x(va.x))
+            .attr("width", (va:VisualActivity)  => x(va.width))
             .attr("height", y.bandwidth());
     }
 
     update(selection: UpdatableSelection, x: XScale, y: YScale) {
-        selection.selectAll("rect.roundTime")
+        selection.selectAll("rect.dayEvents")
             .style("opacity", 1)
-            .attr("x", r => x(r["offset"]))
-            .attr("width", r => x(r["value"]))
+            .attr("x", (va:VisualActivity) => x(va.x))
+            .attr("width", (va:VisualActivity) => x(va.width))
             .attr("height", y.bandwidth());
     }
 
     remove(selection: UpdatableSelection, x: XScale, y: YScale) {
-        selection.selectAll("rect.roundTime")
+        selection.selectAll("rect.dayEvents")
             .style("opacity", 0)
     }
 }

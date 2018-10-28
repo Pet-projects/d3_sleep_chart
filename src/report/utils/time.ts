@@ -20,8 +20,21 @@ export function dateTimeToEpoch(date: string, hour: string): number {
     return Date.parse(date + ", " + hour);
 }
 
+const MONTH_NAMES = [
+    "Jan", "Feb", "Mar",
+    "Apr", "May", "Jun", "Jul",
+    "Aug", "Sept", "Oct",
+    "Nov", "Dec"
+];
+
 function pad(num) {
     return ("0"+num).slice(-2);
+}
+
+export function epochToDateTime(timestamp: number): string {
+    let d = new Date(timestamp);
+    return d.getDate() + "-" + MONTH_NAMES[d.getMonth()] + "-" + d.getFullYear() + "_" +
+        pad(d.getHours()) + ":" + pad(d.getMinutes());
 }
 
 export function timestampToHourAndMinutes(timestamp: number): string {
