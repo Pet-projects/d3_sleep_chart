@@ -77,6 +77,9 @@ export class DayDataRow {
         this.dayStartEpoch = dayStartEpoch;
         this.dayEndEpoch = dayEndEpoch;
 
+        this._displayRowStartEpoch = dayStartEpoch;
+        this._displayRowEndEpoch = dayEndEpoch;
+
         this._activities = [];
         this._y0 = 0;
     }
@@ -88,6 +91,11 @@ export class DayDataRow {
     dayStartEpoch: number;
     // The end of the day represented as timestamp
     dayEndEpoch: number;
+
+    // The start of the displayed day. Describes the interval that is being displayed as opposed to a calender day.
+    _displayRowStartEpoch: number;
+    // The end of the displayed day
+    _displayRowEndEpoch: number;
 
     // Day activities - will refresh based on the controls
     _activities: Activity[];

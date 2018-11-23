@@ -3,7 +3,10 @@ import DataIntervalTree from 'node-interval-tree'
 import {Activity, ActivityTree, ActivityType, DayDataRow, DaysDataArray} from "../domain";
 import {dateTimeToEpoch} from "../utils/time";
 
-const ONE_DAY = 1000 * 60 * 60 * 24;
+const ONE_SECOND = 1000;
+const ONE_MINUTE = 60 * ONE_SECOND;
+const ONE_HOUR = 60 * ONE_MINUTE;
+const ONE_DAY = 24 * ONE_HOUR;
 
 export function toDaysArray(rawData: d3.DSVParsedArray<any>): DaysDataArray {
     let daysDataMap = new Map<string, DayDataRow>();
