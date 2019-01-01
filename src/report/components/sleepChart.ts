@@ -95,11 +95,11 @@ export class SleepChart implements VisualComponent {
         let wholeActivityTree = wholeDataSet.activityTree;
         dataSelection.forEach((d: DayDataRow) => {
             // Get all activities for day
-            let activitiesForDay = wholeActivityTree.search(d.dayStartEpoch, d.dayEndEpoch);
+            let activitiesForDay = wholeActivityTree.search(d._displayRowStartEpoch, d._displayRowEndEpoch);
 
             // Adjust start and end time
             d._activities = activitiesForDay.map(a =>
-                new Activity(Math.max(a.startTimeEpoch, d.dayStartEpoch), Math.min(a.endTimeEpoch, d.dayEndEpoch), a.type)
+                new Activity(Math.max(a.startTimeEpoch, d._displayRowStartEpoch), Math.min(a.endTimeEpoch, d._displayRowEndEpoch), a.type)
             )
         });
 
@@ -111,7 +111,7 @@ export class SleepChart implements VisualComponent {
 
         let x = d3.scaleLinear().range([0, this.width]);
         let firstRecord = dataSelection[0];
-        let maxValue = firstRecord.dayEndEpoch - firstRecord.dayStartEpoch;
+        let maxValue = firstRecord._displayRowEndEpoch - firstRecord._displayRowStartEpoch;
         x.domain([0, maxValue] as Array<number>).nice();
 
         let y = d3.scaleBand().rangeRound([0, height]).padding(0.1).paddingOuter(1);
@@ -148,7 +148,7 @@ export class SleepChart implements VisualComponent {
         this.gTopAxis.transition(t)
             .call(d3.axisTop(x)
                 .tickFormat((numberLike, index) =>
-                    timestampToHourAndMinutes(firstRecord.dayStartEpoch + numberLike.valueOf()))
+                    timestampToHourAndMinutes(firstRecord._displayRowStartEpoch + numberLike.valueOf()))
                 .tickValues(tickValues)
                 .tickSize(-height) as any);
 
@@ -156,7 +156,7 @@ export class SleepChart implements VisualComponent {
             .attr("transform", "translate(0, " + height + ")")
             .call(d3.axisBottom(x)
                 .tickFormat((numberLike, index) =>
-                    timestampToHourAndMinutes(firstRecord.dayStartEpoch + numberLike.valueOf()))
+                    timestampToHourAndMinutes(firstRecord._displayRowStartEpoch + numberLike.valueOf()))
                 .tickValues(tickValues)
                 .tickSize(0));
     }
@@ -232,7 +232,7 @@ class DayEvents implements ChartComponent {
             .data((d: DayDataRow) =>
                     d._activities.map(a => new VisualActivity(
                         a.startTimeEpoch+"",
-                        a.startTimeEpoch-d.dayStartEpoch,
+                        a.startTimeEpoch-d._displayRowStartEpoch,
                         a.endTimeEpoch - a.startTimeEpoch,
                         a.type)),
                 (va:VisualActivity) => va.id);

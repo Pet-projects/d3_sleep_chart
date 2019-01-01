@@ -70,6 +70,11 @@ export class DaysDataSource {
     daysData: Array<DayDataRow>;
 }
 
+const ONE_SECOND = 1000;
+const ONE_MINUTE = 60 * ONE_SECOND;
+const ONE_HOUR = 60 * ONE_MINUTE;
+const ONE_DAY = 24 * ONE_HOUR;
+
 export class DayDataRow {
 
     constructor(dayLabel: string, dayStartEpoch: number, dayEndEpoch: number) {
@@ -77,8 +82,9 @@ export class DayDataRow {
         this.dayStartEpoch = dayStartEpoch;
         this.dayEndEpoch = dayEndEpoch;
 
-        this._displayRowStartEpoch = dayStartEpoch;
-        this._displayRowEndEpoch = dayEndEpoch;
+        //TODO compute this dynamically
+        this._displayRowStartEpoch = dayStartEpoch + 9*ONE_HOUR;
+        this._displayRowEndEpoch = dayEndEpoch + 9*ONE_HOUR;
 
         this._activities = [];
         this._y0 = 0;
